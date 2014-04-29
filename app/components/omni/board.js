@@ -18,8 +18,7 @@ define(["virality"], function(v) {
 
         v.getCanvas().addEventListener("click", function(evt) {
             var pos = getMousePos(v.getCanvas(), evt);
-            pos.x = pos.x + _hexBoard.
-            _hexBoard.select(pox);
+            _hexBoard.select(pos);
         });
 
         v.getCanvas().addEventListener("mousemove", function(evt) {
