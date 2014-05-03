@@ -8,11 +8,18 @@ define(["virality"], function(v) {
     var options = {
         x: 30,
         y: 30,
-        width: 10,
-        height: 10,
+        w: 10,
+        h: 10,
         size: 20,
         lineColor: "#aaa",
-        selectedColor: "#faa"
+        selectedColor: "#333"
+    };
+
+    var tiles = {
+        1: "#eee",
+        2: "#fa8",
+        3: "#af8",
+        4: "#8af"
     };
 
     var hexBoard = function(settings) {
@@ -32,11 +39,16 @@ define(["virality"], function(v) {
             hexHeight = options.size * 2;
             hexWidth = Math.sqrt(3)/2 * hexHeight;
 
-            hexBuffer.height = hexHeight * options.height + (hexHeight / 2) + 4;
-            hexBuffer.width = hexWidth * options.width + (hexWidth / 2) + 4;
+            hexBuffer.height = hexHeight * options.h + (hexHeight / 2) + 4;
+            hexBuffer.width = hexWidth * options.w + (hexWidth / 2) + 4;
 
-            initBoard(hexWidth, hexHeight, options.width, options.height);
-            drawHexBoard(hexContext, options.width, options.height);
+            initHexBoard();
+
+            drawHexBoard(hexContext, options.w, options.h);
+        }
+
+        self.setGrid = function(g) {
+            grid = g;
         }
 
         self.select = function(position) {
@@ -47,19 +59,7 @@ define(["virality"], function(v) {
                 }
             }
 
-            var q = (1/3 * Math.sqrt(3) * (position.x - options.x - (hexWidth / 2)) - 1/3 * (position.y - options.y - (hexHeight / 2))) / options.size;
-            var r = 2/3 * (position.y - options.y - (hexHeight / 2)) / options.size;
-
-            var x = q;
-            var z = r;
-            var y = -x-z;
-
-            var cube = hexRound({x: x, y: y, z: z});
-
-            q = cube.x;
-            r = cube.z;
-
-            var tile = grid[q][r];
+            var tile = getTile(position);
             if (tile) {
                 tile.selected = true;
             }
@@ -72,6 +72,37 @@ define(["virality"], function(v) {
         
         self.config(settings);
     };
+
+    function getTile(position) {
+        var q = (1/3 * Math.sqrt(3) * (position.x - options.x - (hexWidth / 2)) - 1/3 * (position.y - options.y - (hexHeight / 2))) / options.size;
+        var r = 2/3 * (position.y - options.y - (hexHeight / 2)) / options.size;
+
+        var x = q;
+        var z = r;
+        var y = -x-z;
+
+        var cube = hexRound({x: x, y: y, z: z});
+
+        q = cube.x;
+        r = cube.z;
+
+        var tile = grid[q][r];
+        return tile;
+    }
+
+    function initHexBoard() {
+        for(var i = 0; i < options.w; i++) {
+            for(var j = 0; j < options.h; j++) {
+                var x = 1 + (hexWidth / 2) + (i * hexWidth) + (j % 2 * (hexWidth / 2));
+                var y = 1 + (hexHeight / 2) + j * (0.75 * hexHeight);
+
+                var tile = getTile({x: x + options.x, y: y + options.y});
+
+                tile.x = x;
+                tile.y = y;
+            }
+        }
+    }
 
     function hexRound(cube) {
         var rx = Math.round(cube.x);
@@ -91,24 +122,6 @@ define(["virality"], function(v) {
         }
 
         return {x: rx, y: ry, z: rz};
-    }
-
-    function initBoard(hexWidth, hexHeight, w, h) {
-        for(var i = 0; i < w; i++) {
-            for(var j = 0; j < h; j++) {
-                var x = 1 + (hexWidth / 2) + (i * hexWidth) + (j % 2 * (hexWidth / 2));
-                var y = 1 + (hexHeight / 2) + j * (0.75 * hexHeight);
-
-                var r = j;
-                var q = i - Math.floor(j / 2);
-
-                if (!grid[q]) {
-                    grid[q] = [];
-                }
-
-                grid[q][r] = {q: q, r: r, x: x, y: y, selected: false};
-            }
-        }
     }
 
     function drawHexBoard(context, w, h) {
@@ -144,10 +157,10 @@ define(["virality"], function(v) {
             }
         }
         context.strokeStyle = tile.selected ? options.selectedColor : options.lineColor;
-        context.lineWidth = 2;
+        context.lineWidth = tile.selected ? 4 : 2;
         context.stroke();
 
-        context.fillStyle = "#eee";
+        context.fillStyle = tiles[tile.type];
         context.fill();
 
         context.font = "8pt Courier New";

@@ -14,12 +14,21 @@ define(["virality", "components/heartbeat", "components/fps", "components/hexboa
         var hexboard = new Hexboard({
             x: 40, 
             y: 40,
+            w: 10,
+            h: 10,
             size: 25
         });
 
-        var board = new Board({}, hexboard);
+        var board = new Board({
+            w: 10,
+            h: 10
+        }, hexboard);
 
-        v.components(hexboard);
+        board.loaded = function(grid) {
+            hexboard.setGrid(grid);
+            v.components(hexboard);
+        };
+
         v.components(board);
          
         // Handles pause and unpause.
