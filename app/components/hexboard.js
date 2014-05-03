@@ -3,6 +3,8 @@ define(["virality"], function(v) {
         hexContext,
         hexWidth,
         hexHeight,
+        selectedTile = null,
+        updateHexes = true,
         grid = [];
 
     var options = {
@@ -58,10 +60,14 @@ define(["virality"], function(v) {
                     tile.selected = false;
                 }
             }
+            
+            selectedTile = null;
 
             var tile = getTile(position);
+            selectedTile = tile;
             if (tile) {
                 tile.selected = true;
+                updateHexes = true;
             }
         }
 
@@ -125,16 +131,18 @@ define(["virality"], function(v) {
     }
 
     function drawHexBoard(context, w, h) {
-        var selectedTile;
+        if (!updateHexes) {
+            return;
+        }
+        
         context.clearRect(0, 0, w, h);
+
         for(var q in grid) {
             for(var r in grid[q]) {
                 var tile = grid[q][r];
                 
                 if (!tile.selected) {
                     drawHex(context, tile, options.size);
-                } else {
-                    selectedTile = tile;
                 }
             }
         }
@@ -142,6 +150,8 @@ define(["virality"], function(v) {
         if (selectedTile) {
             drawHex(context, selectedTile, options.size);
         }
+
+        updateHexes = false;
     }
 
     function drawHex(context, tile, size) {
